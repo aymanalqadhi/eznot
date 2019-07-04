@@ -15,6 +15,16 @@ init_eznot_server(eznot_server_t *server, app_config_t *config)
 	if (server == NULL)
 		return -1;
 
+	server->config      = config;
+	server->loop        = uv_default_loop();
+	server->handle.data = server;
+
+	int rc = uv_udp_init(server->loop, &server->handle);
+	if (rc < 0) {
+		log_error("Failed to init uv_udp_t, %s.", uv_strerror(rc));
+		return -1;
+	}
+
 	return 0;
 }
 

@@ -3,8 +3,13 @@
 
 #include "config/config.h"
 
+#include <uv.h>
+
 typedef struct eznot_server {
 	app_config_t *config;
+
+	uv_loop_t *loop;
+	uv_udp_t handle;
 } eznot_server_t;
 
 int
