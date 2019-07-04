@@ -7,4 +7,4 @@ target_include_directories(log.c PUBLIC log.c/src/)
 
 # Include uthash
 add_library(uthash INTERFACE)
-target_include_directories(uthash uthash/include)
+target_include_directories(uthash INTERFACE uthash/include/)
