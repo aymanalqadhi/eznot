@@ -1,0 +1,6 @@
+[submodule "lib/log.c"]
+	path = lib/log.c
+	url = https://github.com/rxi/log.c
+[submodule "lib/uthash"]
+	path = lib/uthash
+	url = https://github.com/troydhanson/uthash
