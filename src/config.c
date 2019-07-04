@@ -5,6 +5,7 @@
 #include <getopt.h>
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
 
 
 /******************************************************************************/
@@ -30,7 +31,7 @@ int
 config_parse_argv(app_config_t* config,
 				  int argc,
 				  char** argv,
-				  int handle_errors)
+				  bool handle_errors)
 {
 	char arg;
 	long parsed_value;

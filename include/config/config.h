@@ -2,6 +2,7 @@
 #define EZSRV_CONFIG_CONFIG_H
 
 #include <stdint.h>
+#include <stdbool.h>
 
 /* Errors returned by `config_parse_argv' function */
 #define CONFIG_UNKNOWN_ERROR    -1
@@ -35,7 +36,7 @@ int config_parse_argv(
     app_config_t *config,
     int argc,
     char ** argv,
-    int handle_errors);
+    bool handle_errors);
 
 /**
  * Gets the last error message
