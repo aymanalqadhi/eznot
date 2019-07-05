@@ -7,14 +7,9 @@
 #include <stdint.h>
 #include <string.h>
 
-#define HTOBE16(num) (((num & 0xff0) >> 8) | ((num & 0x00ff) << 8))
-#define HTOBE32(num)                                                           \
-	(((num & 0xff000000) >> 24) | ((num & 0x00ff0000) >> 8) |                  \
-	 ((num & 0x0000ff00) << 8) | ((num & 0x000000ff) << 24))
-
 /******************************************************************************/
 
-static uint32_t
+uint32_t
 calculate_checksum(const uint8_t* buff, size_t len)
 {
 	uint32_t checksum = 0;
@@ -31,6 +26,7 @@ eznot_encode_request_message(const request_message_t* msg,
                              size_t len)
 {
 	assert(buff != NULL);
+	assert(msg != NULL);
 
 	log_trace("eznot_encode_request_message()");
 	if (len < UDP_PACKET_SIZE) {
@@ -77,6 +73,9 @@ eznot_decode_request_message(const char* buff,
                              size_t len,
                              request_message_t* msg)
 {
+	assert(buff != NULL);
+	assert(msg != NULL);
+
 	log_trace("eznot_decode_request_message()");
 	if (len < UDP_PACKET_SIZE) {
 		log_error("Buffer size must be %d, got %d.", UDP_PACKET_SIZE, len);
@@ -97,8 +96,8 @@ eznot_decode_request_message(const char* buff,
 	memcpy((void *)&pchecksum, buff + pos, sizeof(pchecksum));
 	pos += sizeof(pchecksum);
 
-	msg->header.__hchecksum = hchecksum;
-	msg->header.__pchecksum = pchecksum;
+	msg->header.__hchecksum = HTOBE16(hchecksum);
+	msg->header.__pchecksum = HTOBE32(pchecksum);
 
 	/* Decode body */
 	memcpy(msg->payload.tags, buff + pos, REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE);
