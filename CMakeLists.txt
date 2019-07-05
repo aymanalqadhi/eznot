@@ -7,7 +7,8 @@ project(eznot)
 include_directories(include)
 
 # Project files
-set(SOURCE_FILES src/main.c src/config.c src/server.c)
+set(SOURCE_FILES src/main.c src/config.c src/server.c src/memory.c src/address.c
+				 src/callbacks.c)
 set(HEADER_FILES)
 
 # Include subprojects
