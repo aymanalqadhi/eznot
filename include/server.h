@@ -3,7 +3,13 @@
 
 #include "config/config.h"
 
-#include <uv.h>
+#include "uv.h"
+
+#define UV_CHECK(r, msg) \
+  if (r) { \
+    log_error("%s: %s", msg, uv_strerror(r)); \
+    return -1; \
+  }
 
 typedef struct eznot_server {
 	app_config_t *config;

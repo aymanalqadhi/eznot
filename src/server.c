@@ -1,6 +1,9 @@
 #include "server.h"
+#include "address.h"
+#include "callbacks.h"
 
 #include "log.h"
+#include "uv.h"
 
 #include <stdlib.h>
 #include <assert.h>
@@ -20,10 +23,7 @@ init_eznot_server(eznot_server_t *server, app_config_t *config)
 	server->handle.data = server;
 
 	int rc = uv_udp_init(server->loop, &server->handle);
-	if (rc < 0) {
-		log_error("Failed to init uv_udp_t, %s.", uv_strerror(rc));
-		return -1;
-	}
+	UV_CHECK(rc, "uv_udp_init");
 
 	return 0;
 }
@@ -34,6 +34,32 @@ int
 start_eznot_server(const eznot_server_t *server)
 {
 	log_trace("start_eznot_server()");
+	int rc;
+
+	if (server->config->ipv6) {
+		struct sockaddr_in6 addr;
+
+		rc = uv_ip6_addr(EZNOT_IPV6_ANY, server->config->listen_port, &addr);
+		UV_CHECK(rc, "uv_ip6_addr");
+		rc = uv_udp_bind((uv_udp_t *)&server->handle,
+						(struct sockaddr *)&addr, 0);
+		UV_CHECK(rc, "uv_udp_bind");
+	} else {
+		struct sockaddr_in addr;
+
+		rc = uv_ip4_addr(EZNOT_IPV4_ANY, server->config->listen_port, &addr);
+		UV_CHECK(rc, "uv_ip4_addr");
+		rc = uv_udp_bind((uv_udp_t *)&server->handle,
+						(struct sockaddr *)&addr, 0);
+		UV_CHECK(rc, "uv_udp_bind");
+	}
+
+	rc = uv_udp_recv_start((uv_udp_t *)&server->handle,
+						   &eznot_on_alloc,
+						   &eznot_on_recv);
+	UV_CHECK(rc, "uv_udp_recv_start");
+	rc = uv_run(server->loop, UV_RUN_DEFAULT);
+	UV_CHECK(rc, "uv_run");
 
 	return 0;
 }
