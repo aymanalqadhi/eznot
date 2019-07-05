@@ -13,6 +13,9 @@ set(HEADER_FILES)
 # Include subprojects
 add_subdirectory(lib)
 
+# Add definitions
+add_definitions(-DDEBUG)
+
 # Project targets
 add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
-target_link_libraries(${PROJECT_NAME} log.c uthash)
+target_link_libraries(${PROJECT_NAME} log.c uthash uv)
