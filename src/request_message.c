@@ -102,7 +102,7 @@ eznot_decode_request_message(const char* buff,
 	/* Decode body */
 	memcpy(msg->payload.tags, buff + pos, REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE);
 	pos += REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE;
-	memcpy(msg->payload.tags, buff + pos, REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE);
+	memcpy(msg->payload.data, buff + pos, REQUEST_MESSAGE_PAYLOAD_DATA_SIZE);
 	pos += REQUEST_MESSAGE_PAYLOAD_DATA_SIZE;
 
 	return pos;
