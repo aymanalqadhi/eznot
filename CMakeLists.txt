@@ -8,8 +8,7 @@ include_directories(include)
 
 # Project files
 set(SOURCE_FILES src/main.c src/config.c src/server.c src/memory.c src/address.c
-				 src/callbacks.c)
-set(HEADER_FILES)
+				 src/callbacks.c src/request_message.c)
 
 # Include subprojects
 add_subdirectory(lib)
@@ -19,5 +18,5 @@ add_subdirectory(tests)
 add_definitions(-DDEBUG)
 
 # Project targets
-add_executable(${PROJECT_NAME} ${SOURCE_FILES} ${HEADER_FILES})
+add_executable(${PROJECT_NAME} ${SOURCE_FILES})
 target_link_libraries(${PROJECT_NAME} log.c uthash uv)
