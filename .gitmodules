@@ -4,3 +4,6 @@
 [submodule "lib/uthash"]
 	path = lib/uthash
 	url = https://github.com/troydhanson/uthash
+[submodule "lib/msgpack-c"]
+	path = lib/msgpack-c
+	url = https://github.com/msgpack/msgpack-c
