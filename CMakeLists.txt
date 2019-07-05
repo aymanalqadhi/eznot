@@ -13,6 +13,7 @@ set(HEADER_FILES)
 
 # Include subprojects
 add_subdirectory(lib)
+add_subdirectory(tests)
 
 # Add definitions
 add_definitions(-DDEBUG)
