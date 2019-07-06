@@ -127,7 +127,7 @@ eznot_are_valid_tags(const char *tags, size_t len)
 	static regex_t patt;
 
 	if (!inited) {
-		if (regcomp(&patt, VALID_TAGS_PATTERN, 0) != 0) {
+		if (regcomp(&patt, VALID_TAGS_PATTERN, REG_EXTENDED) != 0) {
 			log_error("Could not initialize matching regex pattern!");
 			return false;
 		}
