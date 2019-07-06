@@ -10,7 +10,7 @@
 /******************************************************************************/
 
 uint32_t
-calculate_checksum(const uint8_t* buff, size_t len)
+eznot_calculate_checksum(const uint8_t* buff, size_t len)
 {
 	uint32_t checksum = 0;
 	for (int i = 0; i < len; ++i)
@@ -39,10 +39,11 @@ eznot_encode_request_message(const request_message_t* msg,
 
 	/* Calculate checksums */
 	uint16_t hchecksum = msg->header.message_type + msg->header.flags;
-	uint32_t pchecksum = calculate_checksum(msg->payload.tags,
-	                                        REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) +
-	                     calculate_checksum(msg->payload.data,
-	                                        REQUEST_MESSAGE_PAYLOAD_DATA_SIZE);
+	uint32_t pchecksum =
+	    eznot_calculate_checksum(msg->payload.tags,
+	                             REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) +
+	    eznot_calculate_checksum(msg->payload.data,
+	                             REQUEST_MESSAGE_PAYLOAD_DATA_SIZE);
 	/* Convert checksums to big endian */
 	hchecksum = HTOBE16(hchecksum);
 	pchecksum = HTOBE32(pchecksum);
@@ -85,15 +86,15 @@ eznot_decode_request_message(const char* buff,
 	/* Decode Header */
 	int pos = 0;
 	msg->header.message_type = buff[pos++];
-	msg->header.flags        = buff[pos++];
+	msg->header.flags = buff[pos++];
 
 	/* Decode checksums */
 	uint16_t hchecksum;
 	uint32_t pchecksum;
 
-	memcpy((void *)&hchecksum, buff + pos, sizeof(hchecksum));
+	memcpy((void*)&hchecksum, buff + pos, sizeof(hchecksum));
 	pos += sizeof(hchecksum);
-	memcpy((void *)&pchecksum, buff + pos, sizeof(pchecksum));
+	memcpy((void*)&pchecksum, buff + pos, sizeof(pchecksum));
 	pos += sizeof(pchecksum);
 
 	msg->header.__hchecksum = HTOBE16(hchecksum);

@@ -1,6 +1,7 @@
 #ifndef EZNOT_REQUEST_MESSAGE_H
 #define EZNOT_REQUEST_MESSAGE_H
 
+#include <stdbool.h>
 #include <stddef.h>
 #include <stdint.h>
 
@@ -59,6 +60,6 @@ eznot_decode_request_message(const char* buff,
                              request_message_t* msg);
 
 uint32_t
-calculate_checksum(const uint8_t* buff, size_t len);
+eznot_calculate_checksum(const uint8_t* buff, size_t len);
 
 #endif /* end of include guard: EZNOT_REQUEST_MESSAGE_H */
