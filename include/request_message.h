@@ -62,4 +62,7 @@ eznot_decode_request_message(const char* buff,
 uint32_t
 eznot_calculate_checksum(const uint8_t* buff, size_t len);
 
+bool
+eznot_are_valid_tags(const char *tags, size_t len);
+
 #endif /* end of include guard: EZNOT_REQUEST_MESSAGE_H */

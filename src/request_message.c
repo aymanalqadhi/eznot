@@ -6,6 +6,9 @@
 #include <stddef.h>
 #include <stdint.h>
 #include <string.h>
+#include <regex.h>
+
+#define VALID_TAGS_PATTERN "^([a-zA-Z0-9_-]+,?)+$"
 
 /******************************************************************************/
 
@@ -107,6 +110,35 @@ eznot_decode_request_message(const char* buff,
 	pos += REQUEST_MESSAGE_PAYLOAD_DATA_SIZE;
 
 	return pos;
+}
+
+/******************************************************************************/
+
+bool
+eznot_are_valid_tags(const char *tags, size_t len)
+{
+	log_trace("eznot_are_valid_tags()");
+
+	if (tags == NULL) {
+		return true;
+	}
+
+	static bool inited = false;
+	static regex_t patt;
+
+	if (!inited) {
+		if (regcomp(&patt, VALID_TAGS_PATTERN, 0) != 0) {
+			log_error("Could not initialize matching regex pattern!");
+			return false;
+		}
+		inited = true;
+	}
+
+	char buff[len + 1];
+	memcpy(buff, tags, len);
+	buff[len] = '\0';
+
+	return regexec(&patt, buff, 0, NULL, 0) != REG_NOMATCH;
 }
 
 /******************************************************************************/
