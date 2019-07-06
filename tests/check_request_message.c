@@ -4,6 +4,31 @@
 #include <stdlib.h>
 #include <string.h>
 
+
+START_TEST(test_are_valid_tags)
+{
+	const char *valid_tags1 = "test,tag-1,test_3,test-xxxxxx-last";
+	const char *valid_tags2 = "these,are,valid,tags";
+	const char *valid_tags3 = "__,_,__,--,tags,--";
+	const char *valid_tags4 = NULL;
+
+	const char *invalid_tags1 = "th!s,is,a-tag";
+	const char *invalid_tags2 = "a malicous code with spaces";
+	const char *invalid_tags3 = "1 + 1 = 2";
+	const char *invalid_tags4 = "";
+
+	ck_assert(eznot_are_valid_tags(valid_tags1, strlen(valid_tags1)));
+	ck_assert(eznot_are_valid_tags(valid_tags2, strlen(valid_tags2)));
+	ck_assert(eznot_are_valid_tags(valid_tags3, strlen(valid_tags3)));
+	ck_assert(eznot_are_valid_tags(valid_tags4, 0));
+
+	ck_assert(!eznot_are_valid_tags(invalid_tags1, strlen(invalid_tags1)));
+	ck_assert(!eznot_are_valid_tags(invalid_tags2, strlen(invalid_tags2)));
+	ck_assert(!eznot_are_valid_tags(invalid_tags3, strlen(invalid_tags3)));
+	ck_assert(!eznot_are_valid_tags(invalid_tags4, strlen(invalid_tags4)));
+}
+END_TEST
+
 START_TEST(test_request_message_encode)
 {
 	request_message_t msg;
@@ -45,7 +70,7 @@ START_TEST(test_request_message_encode)
 	              "Expected value: %d, got %d.",
 	              HTOBE16(hchecksum),
 	              type + flags);
-	rslt = calculate_checksum(
+	rslt = eznot_calculate_checksum(
 	    (const uint8_t*)(encoded_buffer + REQUEST_MESSAGE_HEADER_SIZE),
 	    REQUEST_MESSAGE_PAYLOAD_SIZE);
 	ck_assert_msg(HTOBE32(pchecksum) == rslt,
@@ -105,16 +130,16 @@ START_TEST(test_request_message_decode)
 			  decoded.header.__hchecksum,
 			  msg.header.message_type + msg.header.flags);
 	ck_assert(decoded.header.__pchecksum ==
-	          calculate_checksum(msg.payload.tags, REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) +
-			  calculate_checksum(msg.payload.data, REQUEST_MESSAGE_PAYLOAD_DATA_SIZE));
+	          eznot_calculate_checksum(msg.payload.tags, REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) +
+			  eznot_calculate_checksum(msg.payload.data, REQUEST_MESSAGE_PAYLOAD_DATA_SIZE));
 
 	/* Check the payload */
 	ck_assert(strncmp(decoded.payload.tags,
 	                  msg.payload.tags,
-	                  REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE));
+	                  REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) == 0);
 	ck_assert(strncmp(decoded.payload.data,
 	                  msg.payload.data,
-	                  REQUEST_MESSAGE_PAYLOAD_DATA_SIZE));
+	                  REQUEST_MESSAGE_PAYLOAD_DATA_SIZE) == 0);
 }
 END_TEST
 
@@ -129,6 +154,7 @@ request_message_suite(void)
 
 	tcase_add_test(tc_core, test_request_message_encode);
 	tcase_add_test(tc_core, test_request_message_decode);
+	tcase_add_test(tc_core, test_are_valid_tags);
 
 	suite_add_tcase(s, tc_core);
 
