@@ -1,6 +1,7 @@
 #include "server.h"
 #include "address.h"
 #include "callbacks.h"
+#include "publishers.h"
 
 #include "log.h"
 #include "uv.h"
@@ -15,14 +16,27 @@ init_eznot_server(eznot_server_t *server, app_config_t *config)
 {
 	log_trace("init_eznot_server()");
 
-	if (server == NULL)
+	if (server == NULL) {
 		return -1;
+	}
 
 	server->config      = config;
 	server->loop        = uv_default_loop();
 	server->handle.data = server;
 
-	int rc = uv_udp_init(server->loop, &server->handle);
+	int rc;
+	if (config->trusted_publishers_file == NULL) {
+		log_error("You need to provied a trusted publishers file!");
+		return -1;
+	} else {
+		rc = eznot_load_publishers(config->trusted_publishers_file);
+		if (rc != 0) {
+			log_error("Could not load publishers!");
+			return -1;
+		}
+	}
+
+	rc = uv_udp_init(server->loop, &server->handle);
 	UV_CHECK(rc, "uv_udp_init");
 
 	return 0;
