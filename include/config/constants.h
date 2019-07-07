@@ -15,17 +15,18 @@
 
 /* String used by getopt function to interpret 
  * command line arguments */
-#define CONFIG_ARGS_LIST "6p:hV"
+#define CONFIG_ARGS_LIST "p:t:6hV"
 
 /* Comannd line usage string */
 #define CONFIG_COMMAND_LINE_USAGE \
-  "[ -p port ] [ -6] [ -h ] [ -V ]"
+  "[ -p port ] [ -t trusted ][ -6] [ -h ] [ -V ]"
 
 /* Command line arguments help list.
  * Starts with the usage, and followed by each argument description.
  */
 #define CONFIG_COMMAND_LINE_HELP \
   "  -p, --port      The port to listen on.\n"\
+  "  -t, --trusted   A file containing trusted publishers.\n"\
   "  -6, --ipv6      Enforce IPv6 usage.\n"\
   "  -h, --help      Show this message and exit.\n"\
   "  -V, --version   Show app version and exit.\n"

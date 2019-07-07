@@ -1,18 +1,20 @@
 #include "config/config.h"
 #include "config/constants.h"
 
-#include <errno.h>
 #include <getopt.h>
+#include <unistd.h>
+
+#include <errno.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
-
+#include <string.h>
 
 /******************************************************************************/
 
 /* Holds the last error message.
  * NULL indicates that there were no erros in the last operation*/
-static const char* error_message;
+static const char*error_message;
 
 /******************************************************************************/
 
@@ -39,9 +41,10 @@ config_parse_argv(app_config_t* config,
 	/* Application options definitions */
 	static struct option options[] = {
 		{"port",    required_argument, NULL, 'p'},
-		{"ipv6",    no_argument, NULL, '6'},
-		{"help",    no_argument, NULL, 'h'},
-		{"version", no_argument, NULL, 'V'}
+		{"trusted", required_argument, NULL, 't'},
+		{"ipv6",    no_argument, NULL,       '6'},
+		{"help",    no_argument, NULL,       'h'},
+		{"version", no_argument, NULL,       'V'}
 	};
 
 	/* Set default values */
@@ -52,6 +55,48 @@ config_parse_argv(app_config_t* config,
 	while ((arg = getopt_long_only(
 				argc, argv, CONFIG_ARGS_LIST, options, NULL)) != -1) {
 		switch (arg) {
+
+		/* Port option */
+		case 'p':
+			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
+				parsed_value > 0xFFFF) {
+				error_message = "Invalid port value";
+				if (handle_errors) {
+					fprintf(stderr, "ERROR: %s!\n", error_message);
+					exit(EXIT_FAILURE);
+				} else {
+					return CONFIG_INVALID_VALUE;
+				}
+			}
+
+			config->listen_port = (uint16_t)parsed_value;
+			break;
+
+		/* Port option */
+		case 't':
+			if (strncmp(optarg, "-", 1) == 0) {
+				config->trusted_publishers_file = stdin;
+			} else if (access(optarg, F_OK) == -1) {
+				if (handle_errors) {
+					fprintf(stderr, "ERROR: Cannot access file %s\n", optarg);
+					exit(EXIT_FAILURE);
+				} else {
+					return CONFIG_INVALID_VALUE;
+				}
+			}
+
+			config->trusted_publishers_file = fopen(optarg, "r");
+			if (config->trusted_publishers_file == NULL) {
+				if (handle_errors) {
+					fprintf(stderr, "ERROR: Could not open file %s\n", optarg);
+					exit(EXIT_FAILURE);
+				} else {
+					return CONFIG_UNKNOWN_ERROR;
+				}
+			}
+
+			break;
+
 		/* Help option */
 		case 'h':
 			if (handle_errors) {
@@ -73,22 +118,6 @@ config_parse_argv(app_config_t* config,
 			} else {
 				return CONFIG_VERSION_MESSAGE;
 			}
-
-		/* Port option */
-		case 'p':
-			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
-				parsed_value > 0xFFFF) {
-				error_message = "Invalid port value";
-				if (handle_errors) {
-					fprintf(stderr, "ERROR: %s!\n", error_message);
-					exit(EXIT_FAILURE);
-				} else {
-					return CONFIG_INVALID_VALUE;
-				}
-			}
-
-			config->listen_port = (uint16_t)parsed_value;
-			break;
 
 		/* IPv6 option */
 		case '6':

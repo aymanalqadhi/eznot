@@ -3,6 +3,7 @@
 
 #include <stdbool.h>
 #include <stdint.h>
+#include <stdio.h>
 
 /* Errors returned by `config_parse_argv' function */
 #define CONFIG_UNKNOWN_ERROR -1
@@ -21,6 +22,8 @@ typedef struct app_config
 
 	uint16_t listen_port; /* The port the server listens on */
 	int ipv6;			  /* If set, IPv6 is used, default is IPv4 */
+
+	FILE *trusted_publishers_file;
 } app_config_t;
 
 /**
