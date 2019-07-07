@@ -7,3 +7,6 @@
 [submodule "lib/msgpack-c"]
 	path = lib/msgpack-c
 	url = https://github.com/msgpack/msgpack-c
+[submodule "lib/c-thread-pool"]
+	path = lib/c-thread-pool
+	url = https://github.com/Pithikos/C-Thread-Pool
