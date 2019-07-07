@@ -2,12 +2,19 @@
 #include "address.h"
 #include "callbacks.h"
 #include "publishers.h"
+#include "jobs_runner.h"
 
 #include "log.h"
 #include "uv.h"
 
 #include <stdlib.h>
 #include <assert.h>
+
+/*
+ * TODO:
+ * Move this to config
+ */
+#define THREAD_POOL_SIZE 8
 
 /******************************************************************************/
 
@@ -29,11 +36,18 @@ init_eznot_server(eznot_server_t *server, app_config_t *config)
 		log_error("You need to provied a trusted publishers file!");
 		return -1;
 	} else {
+		log_debug("Reading trusted publishers...");
 		rc = eznot_load_publishers(config->trusted_publishers_file);
 		if (rc != 0) {
 			log_error("Could not load publishers!");
 			return -1;
 		}
+	}
+
+	log_debug("Initializig thread pool with %d threads...", THREAD_POOL_SIZE);
+	if ((rc = eznot_init_jobs_runner(THREAD_POOL_SIZE)) != 0) {
+		log_error("Could initialize thread pool!");
+		return -1;
 	}
 
 	rc = uv_udp_init(server->loop, &server->handle);
@@ -84,6 +98,9 @@ void
 free_eznot_server(eznot_server_t *server)
 {
 	log_trace("free_eznot_server()");
+
+	log_debug("Freeing thread pool");
+	eznot_destroy_jobs_runner();
 }
 
 /******************************************************************************/
