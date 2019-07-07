@@ -1,19 +1,36 @@
 #include "address.h"
 #include "callbacks.h"
 #include "memory.h"
+#include "publishers.h"
 #include "request_message.h"
 #include "subscribers.h"
-#include "publishers.h"
+
+#include "jobs/send_not.h"
+#include "jobs_runner.h"
 
 #include "log.c"
+#include "uthash.h"
 #include "uv.h"
 
 #include <stdlib.h>
+#include <string.h>
 
 /******************************************************************************/
 
 static int
 get_ip_str(const struct sockaddr* sa, char* s, size_t maxlen);
+
+/******************************************************************************/
+
+static void
+handle_publish_requests(const request_message_t* req,
+						uv_udp_t* handle,
+						const struct sockaddr* addr);
+
+static void
+handle_subscribe_requests(const request_message_t* req,
+						  uv_udp_t* handle,
+						  const struct sockaddr* addr);
 
 /******************************************************************************/
 
@@ -42,16 +59,13 @@ eznot_on_recv(uv_udp_t* handle,
 			goto clean_exit;
 		}
 
-		char fromaddr[INET6_ADDRSTRLEN];
-		if (get_ip_str(from, fromaddr, INET6_ADDRSTRLEN) != 0) {
-			/* TODO: Handle error */
-			goto clean_exit;
-		}
-
+		/* Handle requests */
 		switch (req.header.message_type) {
 		case PUBLISH_MESSAGE:
+			handle_publish_requests(&req, handle, from);
 			goto clean_exit;
 		case SUBSCRIBE_MESSAGE:
+			handle_subscribe_requests(&req, handle, from);
 			goto clean_exit;
 		}
 	}
@@ -93,6 +107,77 @@ get_ip_str(const struct sockaddr* sa, char* s, size_t maxlen)
 	}
 
 	return 0;
+}
+
+/******************************************************************************/
+
+static void
+handle_publish_requests(const request_message_t* req,
+						uv_udp_t* handle,
+						const struct sockaddr* from)
+{
+	log_trace("handle_publish_requests()");
+
+	/* Get the ip address string */
+	char fromaddr[INET6_ADDRSTRLEN];
+	if (get_ip_str(from, fromaddr, INET6_ADDRSTRLEN) != 0) {
+		log_error("Could not get ip address of client.");
+		return;
+	}
+
+	/* Check if this is a valid publisher */
+	if (eznot_is_valid_publisher(fromaddr) != 0) {
+		log_warn("Got a publish request from an unauthorized client %s",
+				 fromaddr);
+		return;
+	}
+
+	/* Check if the tags are valid */
+	if (!eznot_are_valid_tags((char*)req->payload.data,
+							  REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE)) {
+		log_warn("Got malformed tags in request from client %s", fromaddr);
+		return;
+	}
+
+	subscriber_t *subscribers = eznot_get_subscribers(), *s, *tmp;
+	if (req->header.flags & EZNOT_REQUEST_BROADCAST) {
+		/* Create a data buffer */
+		char* data = xmalloc(REQUEST_MESSAGE_TOTAL_SIZE);
+		memcpy(data, req->payload.data, REQUEST_MESSAGE_TOTAL_SIZE);
+		/* Create state variables */
+		bool* start = xmalloc(sizeof(*start));
+		int* refcount = xmalloc(sizeof(*refcount));
+		/* Set state variables values */
+		*start = false;
+		*refcount = 0;
+
+		if (strlen((char*)req->payload.tags) > 0) {
+			/* To all subscribers */
+			HASH_ITER(hh, subscribers, s, tmp) {
+				send_not_payload_t* payload = xmalloc(sizeof(*payload));
+				payload->not_data = data;
+				payload->start = start;
+				payload->refcount = refcount;
+
+				eznot_enqueue_job(&eznot_send_not_job, payload);
+			}
+		} else {
+			/* TODO: Implement this */
+		}
+	} else {
+		/* TODO: Implement this */
+		HASH_ITER(hh, subscribers, s, tmp) {}
+	}
+}
+
+/******************************************************************************/
+
+static void
+handle_subscribe_requests(const request_message_t* req,
+						  uv_udp_t* handle,
+						  const struct sockaddr* addr)
+{
+	log_trace("handle_subscribe_requests()");
 }
 
 /******************************************************************************/
