@@ -23,6 +23,8 @@
 	((num & 0x000000ff) << 24u) | ((num & 0x0000ff00) << 8u) |                 \
 	((num & 0x00ff0000) >> 8u) | ((num & 0xff000000) >> 24u)
 
+#define EZNOT_REQUEST_BROADCAST 1
+
 enum request_message_type
 {
 	SUBSCRIBE_MESSAGE = 0,
