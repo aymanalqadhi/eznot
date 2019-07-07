@@ -153,7 +153,8 @@ handle_publish_requests(const request_message_t* req,
 
 		if (strlen((char*)req->payload.tags) > 0) {
 			/* To all subscribers */
-			HASH_ITER(hh, subscribers, s, tmp) {
+			HASH_ITER(hh, subscribers, s, tmp)
+			{
 				send_not_payload_t* payload = xmalloc(sizeof(*payload));
 				payload->not_data = data;
 				payload->start = start;
@@ -175,9 +176,36 @@ handle_publish_requests(const request_message_t* req,
 static void
 handle_subscribe_requests(const request_message_t* req,
 						  uv_udp_t* handle,
-						  const struct sockaddr* addr)
+						  const struct sockaddr* from)
 {
 	log_trace("handle_subscribe_requests()");
+
+	/* Get the ip address string */
+	char fromaddr[INET6_ADDRSTRLEN];
+	if (get_ip_str(from, fromaddr, INET6_ADDRSTRLEN) != 0) {
+		log_error("Could not get ip address of client.");
+		return;
+	}
+
+	/* Check if the client has subscribed before */
+	if (eznot_get_subscriber(fromaddr) != NULL) {
+		/* TODO: replay to client with message */
+		return;
+	}
+
+	/* Check if the tags are valid */
+	if (!eznot_are_valid_tags((char*)req->payload.data,
+							  REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE)) {
+		log_warn("Got malformed tags in request from client %s", fromaddr);
+		return;
+	}
+
+	/* Add subscriber */
+	if (eznot_add_subscriber((struct sockaddr_storage*)from,
+							 (char *)req->payload.tags,
+							 REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) != 0) {
+		log_error("Cound not subscribe client %s.", fromaddr);
+	}
 }
 
 /******************************************************************************/
