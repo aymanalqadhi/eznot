@@ -74,9 +74,7 @@ config_parse_argv(app_config_t* config,
 
 		/* Port option */
 		case 't':
-			if (strncmp(optarg, "-", 1) == 0) {
-				config->trusted_publishers_file = stdin;
-			} else if (access(optarg, F_OK) == -1) {
+			if (access(optarg, F_OK) == -1) {
 				if (handle_errors) {
 					fprintf(stderr, "ERROR: Cannot access file %s\n", optarg);
 					exit(EXIT_FAILURE);
