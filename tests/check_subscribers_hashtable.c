@@ -14,6 +14,8 @@ static int print_subscriber(subscriber_t *s)
 {
 	log_debug("-----------------------------");
 	log_debug("Address: %s", s->address);
+	log_debug("Tags: %s", s->tags);
+	log_debug("Tags len: %ul", s->tags_len);
 	log_debug("-----------------------------");
 
 	return 0;
@@ -22,6 +24,8 @@ static int print_subscriber(subscriber_t *s)
 START_TEST(test_subscribers_hashtable)
 {
 	const char *test_address = "127.0.0.1";
+	const char *test_tags = "test,tags,oh,yeah";
+	const size_t test_tagslen = strlen(test_tags);
 	const unsigned short port = 3434;
 	subscriber_t *s;
 
@@ -33,7 +37,7 @@ START_TEST(test_subscribers_hashtable)
 	ck_assert(uv_inet_pton(AF_INET, test_address, &(addr.addrv4.sin_addr)) >= 0);
 	ck_assert(addr.addrv4.sin_family == addr.storage.ss_family);
 
-	ck_assert(eznot_add_subscriber(&addr.storage, NULL, 0) == 0);
+	ck_assert(eznot_add_subscriber(&addr.storage, test_tags, test_tagslen) == 0);
 	ck_assert(eznot_subscribers_count() == 1);
 
 	ck_assert(eznot_iterate_subscribers(&print_subscriber) == 1);
@@ -42,6 +46,8 @@ START_TEST(test_subscribers_hashtable)
 	struct sockaddr_in *saddr = (struct sockaddr_in *)&s->endpoint;
 
 	ck_assert(strcmp(s->address, test_address) == 0);
+	ck_assert(strncmp(s->tags, test_tags, s->tags_len) == 0);
+	ck_assert(s->tags_len == test_tagslen);
 	ck_assert(saddr->sin_port == htons(port));
 	ck_assert(s->endpoint.ss_family == AF_INET);
 }
