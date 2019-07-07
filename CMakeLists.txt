@@ -8,7 +8,8 @@ include_directories(include)
 
 # Project files
 set(SOURCE_FILES src/main.c src/config.c src/server.c src/memory.c src/address.c
-				 src/callbacks.c src/request_message.c)
+				 src/callbacks.c src/request_message.c src/subscribers.c
+				 src/publisher.c)
 
 # Include subprojects
 add_subdirectory(lib)
