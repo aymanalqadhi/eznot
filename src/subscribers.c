@@ -9,6 +9,7 @@
 #include <assert.h>
 #include <stddef.h>
 #include <stdlib.h>
+#include <string.h>
 
 /******************************************************************************/
 
@@ -19,7 +20,7 @@ static unsigned int subscribers_count = 0;
 
 int
 eznot_add_subscriber(struct sockaddr_storage* endpoint,
-                     char** tags,
+                     const char* tags,
                      size_t tagslen)
 {
 	assert(endpoint != NULL);
@@ -55,14 +56,11 @@ eznot_add_subscriber(struct sockaddr_storage* endpoint,
 
 	if (s != NULL) {
 		if (s->tags != NULL && s->tags != tags) {
-			for (int i = 0; i < s->tags_len; ++i) {
-				free(s->tags[i]);
-			}
 			free(s->tags);
 		}
 
 		if (tags != NULL) {
-			s->tags = tags;
+			s->tags = strndup(tags, tagslen);
 			s->tags_len = tagslen;
 		} else {
 			s->tags = NULL;
@@ -76,7 +74,7 @@ eznot_add_subscriber(struct sockaddr_storage* endpoint,
 
 	memcpy(s->address, address, INET6_ADDRSTRLEN);
 	memcpy(&s->endpoint, endpoint, sizeof(s->endpoint));
-	s->tags = tags;
+	s->tags = strndup(tags, tagslen);
 	s->tags_len = tagslen;
 
 	HASH_ADD_STR(subscribers, address, s);

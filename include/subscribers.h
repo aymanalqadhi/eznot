@@ -13,14 +13,14 @@ typedef struct subscriber
 	char address[INET6_ADDRSTRLEN];
 	struct sockaddr_storage endpoint;
 
-	char** tags;
+	char* tags;
 	size_t tags_len;
 
 	UT_hash_handle hh;
 } subscriber_t;
 
 int
-eznot_add_subscriber(struct sockaddr_storage*, char**, size_t);
+eznot_add_subscriber(struct sockaddr_storage*, const char*, size_t);
 
 subscriber_t*
 eznot_get_subscriber(const char*);
