@@ -51,6 +51,7 @@ config_parse_argv(app_config_t* config,
 	config->executable_name = argv[0];
 	config->ipv6 = CONFIG_DEFAULT_IPV6_ENABLED;
 	config->listen_port = CONFIG_DEFAULT_PORT;
+	config->trusted_publishers_file = NULL;
 
 	while ((arg = getopt_long_only(
 				argc, argv, CONFIG_ARGS_LIST, options, NULL)) != -1) {
@@ -157,7 +158,7 @@ parse_long(const char* str, long* ret)
 {
 	errno = 0;
 	char* endp;
-	*ret = strtol(optarg, &endp, 10);
+	*ret = strtol(str, &endp, 10);
 
 	if (errno != 0 || *endp != '\0') {
 		return -1;
