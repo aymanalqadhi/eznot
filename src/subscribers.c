@@ -20,8 +20,8 @@ static unsigned int subscribers_count = 0;
 
 int
 eznot_add_subscriber(struct sockaddr_storage* endpoint,
-                     const char* tags,
-                     size_t tagslen)
+					 const char* tags,
+					 size_t tagslen)
 {
 	assert(endpoint != NULL);
 
@@ -34,14 +34,14 @@ eznot_add_subscriber(struct sockaddr_storage* endpoint,
 	/* Handle IPv4 */
 	if (endpoint->ss_family == AF_INET) {
 		ret = uv_inet_ntop(AF_INET,
-		                   &((union ip_address*)endpoint)->addrv4.sin_addr,
-		                   address,
-		                   INET_ADDRSTRLEN);
+						   &((union ip_address*)endpoint)->addrv4.sin_addr,
+						   address,
+						   INET_ADDRSTRLEN);
 	} else if (endpoint->ss_family == AF_INET6) {
 		ret = uv_inet_ntop(AF_INET6,
-		                   &((union ip_address*)endpoint)->addrv6.sin6_addr,
-		                   address,
-		                   INET6_ADDRSTRLEN);
+						   &((union ip_address*)endpoint)->addrv6.sin6_addr,
+						   address,
+						   INET6_ADDRSTRLEN);
 	} else {
 		log_error("Unsupported address family %d.", endpoint->ss_family);
 		return -1;
@@ -105,8 +105,7 @@ eznot_iterate_subscribers(int (*action)(subscriber_t*))
 	int done = 0;
 
 	subscriber_t *s, *tmp;
-	HASH_ITER(hh, subscribers, s, tmp)
-	{
+	HASH_ITER(hh, subscribers, s, tmp) {
 		if (action(s) != 0) {
 			return done;
 		}
@@ -114,6 +113,14 @@ eznot_iterate_subscribers(int (*action)(subscriber_t*))
 	}
 
 	return done;
+}
+
+/******************************************************************************/
+
+subscriber_t*
+eznot_get_subscribers()
+{
+	return subscribers;
 }
 
 /******************************************************************************/

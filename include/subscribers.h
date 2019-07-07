@@ -28,6 +28,9 @@ eznot_get_subscriber(const char*);
 int
 eznot_iterate_subscribers(int (*)(subscriber_t*));
 
+subscriber_t*
+eznot_get_subscribers();
+
 unsigned int
 eznot_subscribers_count();
 
