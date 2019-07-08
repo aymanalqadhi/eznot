@@ -2,7 +2,9 @@
 #include "address.h"
 #include "callbacks.h"
 #include "publishers.h"
+
 #include "jobs_runner.h"
+#include "jobs/send_not.h"
 
 #include "log.h"
 #include "uv.h"
@@ -45,8 +47,14 @@ init_eznot_server(eznot_server_t *server, app_config_t *config)
 	}
 
 	log_debug("Initializig thread pool with %d threads...", THREAD_POOL_SIZE);
-	if ((rc = eznot_init_jobs_runner(THREAD_POOL_SIZE)) != 0) {
+	if (eznot_init_jobs_runner(THREAD_POOL_SIZE) != 0) {
 		log_error("Could initialize thread pool!");
+		return -1;
+	}
+
+	log_debug("Initializing app jobs...");
+	if (eznot_init_send_not_job() != 0) {
+		log_error("Could initialize app jobs!");
 		return -1;
 	}
 
@@ -101,6 +109,9 @@ free_eznot_server(eznot_server_t *server)
 
 	log_debug("Freeing thread pool");
 	eznot_destroy_jobs_runner();
+
+	log_debug("Destroying app jobs");
+	eznot_destroy_send_not_job();
 }
 
 /******************************************************************************/
