@@ -20,10 +20,11 @@ typedef struct app_config
 {
 	const char* executable_name; /* The executing file name (argv[0]) */
 
-	uint16_t listen_port; /* The port the server listens on */
-	uint16_t send_port;	  /* The port the server sends notifications on */
-	int ipv6;			  /* If set, IPv6 is used, default is IPv4 */
+	uint16_t listen_port;   /* The port the server listens on */
+	uint16_t send_port;     /* The port the server sends notifications on */
+	uint16_t threads_count; /* The number of the threads in thr threadpool */
 
+	bool use_ipv6;          /* If set, IPv6 is used, default is IPv4 */
 	FILE *trusted_publishers_file;
 } app_config_t;
 

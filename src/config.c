@@ -42,6 +42,7 @@ config_parse_argv(app_config_t* config,
 	static struct option options[] = {
 		{"port",      required_argument, NULL, 'p'},
 		{"send-port", required_argument, NULL, 's'},
+		{"threads",   required_argument, NULL, 'r'},
 		{"trusted",   required_argument, NULL, 't'},
 		{"ipv6",      no_argument, NULL,       '6'},
 		{"help",      no_argument, NULL,       'h'},
@@ -50,9 +51,10 @@ config_parse_argv(app_config_t* config,
 
 	/* Set default values */
 	config->executable_name         = argv[0];
-	config->ipv6                    = CONFIG_DEFAULT_IPV6_ENABLED;
 	config->listen_port             = CONFIG_DEFAULT_PORT;
 	config->send_port               = CONFIG_DEFAULT_SEND_PORT;
+	config->threads_count           = CONFIG_DEFAULT_THREAD_COUNT;
+	config->use_ipv6                = CONFIG_DEFAULT_IPV6_ENABLED;
 	config->trusted_publishers_file = NULL;
 
 	while ((arg = getopt_long_only(
@@ -88,9 +90,24 @@ config_parse_argv(app_config_t* config,
 				}
 			}
 
-			config->send_port = (uint16_t)parsed_value;
+			config->threads_count = (uint16_t)parsed_value;
 			break;
 
+		/* Send port option */
+		case 'r':
+			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
+				parsed_value > 0xFFFF) {
+				error_message = "Invalid threads count value";
+				if (handle_errors) {
+					fprintf(stderr, "ERROR: %s!\n", error_message);
+					exit(EXIT_FAILURE);
+				} else {
+					return CONFIG_INVALID_VALUE;
+				}
+			}
+
+			config->send_port = (uint16_t)parsed_value;
+			break;
 		/* Trusted publishers file option */
 		case 't':
 			if (access(optarg, F_OK) == -1) {
@@ -138,7 +155,7 @@ config_parse_argv(app_config_t* config,
 
 		/* IPv6 option */
 		case '6':
-			config->ipv6 = 1;
+			config->use_ipv6 = true;
 			break;
 
 			/* An error occured */
