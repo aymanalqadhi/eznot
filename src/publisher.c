@@ -80,11 +80,11 @@ eznot_publishers_count()
 /******************************************************************************/
 
 int
-eznot_load_publishers(FILE* fp)
+eznot_init_publishers_hashtable(const app_config_t* conf)
 {
 	log_trace("eznot_load_publishers()");
 
-	if (fp == NULL) {
+	if (conf->trusted_publishers_file == NULL) {
 		log_error("Cannot use NULL as a source file!");
 		return -1;
 	}
@@ -92,7 +92,7 @@ eznot_load_publishers(FILE* fp)
 	char namebuf[INET6_ADDRSTRLEN];
 	size_t len;
 
-	while (fgets(namebuf, INET6_ADDRSTRLEN, fp)) {
+	while (fgets(namebuf, INET6_ADDRSTRLEN, conf->trusted_publishers_file)) {
 		len = strlen(namebuf);
 
 		/* Ignore empty entries */
@@ -108,6 +108,22 @@ eznot_load_publishers(FILE* fp)
 	}
 
 	return 0;
+}
+
+/******************************************************************************/
+
+void
+eznot_destroy_publishers_hashtable()
+{
+	log_trace("eznot_destroy_publishers_hashtable()");
+
+	publisher_t *pub, *tmp;
+	HASH_ITER(hh, publishers, pub, tmp) {
+		HASH_DELETE(hh, publishers, pub);
+		free(pub);
+	}
+
+	publishers = NULL;
 }
 
 /******************************************************************************/

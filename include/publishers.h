@@ -2,6 +2,7 @@
 #define EZNOT_PUBLISHERS_H
 
 #include "address.h"
+#include "config/config.h"
 
 #include "uthash.h"
 
@@ -24,6 +25,9 @@ int
 eznot_publishers_count();
 
 int
-eznot_load_publishers(FILE *fp);
+eznot_init_publishers_hashtable(const app_config_t* conf);
+
+void
+eznot_destroy_publishers_hashtable();
 
 #endif /* end of include guard: EZNOT_PUBLISHERS_H */
