@@ -1,19 +1,20 @@
 #ifndef EZNOT_JOBS_SEND_NOT_H
 #define EZNOT_JOBS_SEND_NOT_H
 
+#include "config/config.h"
 #include "subscribers.h"
 
 typedef struct send_not_payload
 {
-	subscriber_t *subscriber;
-	char *not_data;
-	
-	bool *start;
-	int *refcount;
+	subscriber_t* subscriber;
+	char* not_data;
+
+	bool* start;
+	int* refcount;
 } send_not_payload_t;
 
 int
-eznot_init_send_not_job();
+eznot_init_send_not_job(const app_config_t* conf);
 
 void
 eznot_send_not_job(void* payload);
