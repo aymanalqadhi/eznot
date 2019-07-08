@@ -83,8 +83,6 @@ eznot_on_alloc(uv_handle_t* client, size_t suggested_size, uv_buf_t* buff)
 
 	buff->base = xmalloc(suggested_size);
 	buff->len = suggested_size;
-
-	log_debug("Allocated %lu bytes in %p.", suggested_size, buff->base);
 }
 
 /******************************************************************************/
@@ -126,14 +124,14 @@ handle_publish_requests(const request_message_t* req,
 	}
 
 	/* Check if this is a valid publisher */
-	if (eznot_is_valid_publisher(fromaddr) != 0) {
+	if (!eznot_is_valid_publisher(fromaddr)) {
 		log_warn("Got a publish request from an unauthorized client %s",
 				 fromaddr);
 		return;
 	}
 
 	/* Check if the tags are valid */
-	if (!eznot_are_valid_tags((char*)req->payload.data,
+	if (!eznot_are_valid_tags((char*)req->payload.tags,
 							  REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE)) {
 		log_warn("Got malformed tags in request from client %s", fromaddr);
 		return;
@@ -156,15 +154,20 @@ handle_publish_requests(const request_message_t* req,
 			HASH_ITER(hh, subscribers, s, tmp)
 			{
 				send_not_payload_t* payload = xmalloc(sizeof(*payload));
+				payload->subscriber = s;
 				payload->not_data = data;
 				payload->start = start;
 				payload->refcount = refcount;
 
 				eznot_enqueue_job(&eznot_send_not_job, payload);
+				++(*refcount);
 			}
 		} else {
 			/* TODO: Implement this */
 		}
+
+		*start = true;
+		eznot_send_not_job_ready();
 	} else {
 		/* TODO: Implement this */
 		HASH_ITER(hh, subscribers, s, tmp) {}
@@ -190,11 +193,12 @@ handle_subscribe_requests(const request_message_t* req,
 	/* Check if the client has subscribed before */
 	if (eznot_get_subscriber(fromaddr) != NULL) {
 		/* TODO: replay to client with message */
+		log_warn("Client %s tries to subscribe again.", fromaddr);
 		return;
 	}
 
 	/* Check if the tags are valid */
-	if (!eznot_are_valid_tags((char*)req->payload.data,
+	if (!eznot_are_valid_tags((char*)req->payload.tags,
 							  REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE)) {
 		log_warn("Got malformed tags in request from client %s", fromaddr);
 		return;
@@ -203,7 +207,9 @@ handle_subscribe_requests(const request_message_t* req,
 	/* Add subscriber */
 	if (eznot_add_subscriber((struct sockaddr_storage*)from,
 							 (char *)req->payload.tags,
-							 REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) != 0) {
+							 REQUEST_MESSAGE_PAYLOAD_TAGS_SIZE) == 0) {
+		log_info("Client %s has subscribed successfully.", fromaddr);
+	} else {
 		log_error("Cound not subscribe client %s.", fromaddr);
 	}
 }
