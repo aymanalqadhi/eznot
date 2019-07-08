@@ -1,6 +1,8 @@
+#include "subscribers.h"
+
+#include "config/config.h"
 #include "address.h"
 #include "memory.h"
-#include "subscribers.h"
 
 #include "log.h"
 #include "uthash.h"
@@ -15,6 +17,7 @@
 
 static subscriber_t* subscribers = NULL;
 static unsigned int subscribers_count = 0;
+static const app_config_t *config;
 
 /******************************************************************************/
 
@@ -33,11 +36,13 @@ eznot_add_subscriber(struct sockaddr_storage* endpoint,
 
 	/* Handle IPv4 */
 	if (endpoint->ss_family == AF_INET) {
+		((struct sockaddr_in *)endpoint)->sin_port = htons(config->send_port);
 		ret = uv_inet_ntop(AF_INET,
 						   &((union ip_address*)endpoint)->addrv4.sin_addr,
 						   address,
 						   INET_ADDRSTRLEN);
 	} else if (endpoint->ss_family == AF_INET6) {
+		((struct sockaddr_in6 *)endpoint)->sin6_port = htons(config->send_port);
 		ret = uv_inet_ntop(AF_INET6,
 						   &((union ip_address*)endpoint)->addrv6.sin6_addr,
 						   address,
@@ -74,6 +79,7 @@ eznot_add_subscriber(struct sockaddr_storage* endpoint,
 
 	memcpy(s->address, address, INET6_ADDRSTRLEN);
 	memcpy(&s->endpoint, endpoint, sizeof(s->endpoint));
+	
 	s->tags = strndup(tags, tagslen);
 	s->tags_len = tagslen;
 
@@ -129,6 +135,15 @@ unsigned int
 eznot_subscribers_count()
 {
 	return subscribers_count;
+}
+
+/******************************************************************************/
+
+int
+eznot_init_subscribers_hashtable(const app_config_t* conf)
+{
+	config = conf;
+	return 0;
 }
 
 /******************************************************************************/
