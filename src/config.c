@@ -6,20 +6,15 @@
 
 #include <errno.h>
 #include <stdio.h>
+#include <stdint.h>
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
 
 /******************************************************************************/
 
-/* Holds the last error message.
- * NULL indicates that there were no erros in the last operation*/
-static const char*error_message;
-
-/******************************************************************************/
-
-static int
-parse_long(const char* str, long* ret);
+static bool
+parse_uint16(const char *str, uint16_t* ret);
 
 /******************************************************************************/
 
@@ -27,7 +22,7 @@ void
 eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 {
 	char arg;
-	long parsed_value;
+	uint16_t parsed_short;
 
 	/* Application options definitions */
 	static struct option options[] = {
@@ -54,48 +49,45 @@ eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 
 		/* Port option */
 		case 'p':
-			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
-				parsed_value > 0xFFFF) {
-				fprintf(stderr, "ERROR: %s!\n", error_message);
+			if (!parse_uint16(optarg, &parsed_short)) {
+				fprintf(stderr, "ERROR: Invalid listen port value!\n");
 				exit(EXIT_FAILURE);
 			}
 
-			config->listen_port = (uint16_t)parsed_value;
+			config->listen_port = parsed_short;
 			break;
 
 		/* Send port option */
 		case 's':
-			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
-				parsed_value > 0xFFFF) {
-				fprintf(stderr, "ERROR: %s!\n", error_message);
+			if (!parse_uint16(optarg, &parsed_short)) {
+				fprintf(stderr, "ERROR: Invalid send port value!\n");
 				exit(EXIT_FAILURE);
 			}
 
-			config->threads_count = (uint16_t)parsed_value;
+			config->threads_count = parsed_short;
 			break;
 
 		/* Send port option */
 		case 'r':
-			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
-				parsed_value > 0xFFFF) {
-					fprintf(stderr, "ERROR: %s!\n", error_message);
+			if (!parse_uint16(optarg, &parsed_short)) {
+					fprintf(stderr, "ERROR: Invalid threadpool size!\n");
 					exit(EXIT_FAILURE);
 			}
 
-			config->send_port = (uint16_t)parsed_value;
+			config->send_port = parsed_short;
 			break;
 
 		/* Trusted publishers file option */
 		case 't':
 			if (access(optarg, F_OK) == -1) {
-					fprintf(stderr, "ERROR: Cannot access file %s\n", optarg);
-					exit(EXIT_FAILURE);
+				fprintf(stderr, "ERROR: Cannot access file %s\n", optarg);
+				exit(EXIT_FAILURE);
 			}
 
 			config->trusted_publishers_file = fopen(optarg, "r");
 			if (config->trusted_publishers_file == NULL) {
-					fprintf(stderr, "ERROR: Could not open file %s\n", optarg);
-					exit(EXIT_FAILURE);
+				fprintf(stderr, "ERROR: Could not open file %s\n", optarg);
+				exit(EXIT_FAILURE);
 			}
 
 			break;
@@ -122,29 +114,30 @@ eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 			/* An error occured */
 		default:
 			fprintf(stderr,
-					"ERROR: %s!\nUsage: %s %s\n",
-					error_message,
+					"Usage: %s %s\n",
 					argv[0],
 					CONFIG_COMMAND_LINE_USAGE);
 			exit(EXIT_FAILURE);
 		}
 	}
+
+	/* Check for required options */
+	if (config->trusted_publishers_file == NULL) {
+		fprintf(stderr, "ERROR: You must provide a trusted publishers file!\n");
+		exit(EXIT_FAILURE);
+	}
 }
 
 /******************************************************************************/
 
-static int
-parse_long(const char* str, long* ret)
+static bool
+parse_uint16(const char *str, uint16_t* ret)
 {
 	errno = 0;
 	char* endp;
-	*ret = strtol(str, &endp, 10);
+	*ret = strtod(str, &endp);
 
-	if (errno != 0 || *endp != '\0') {
-		return -1;
-	} else {
-		return 0;
-	}
+	return !(errno != 0 || *endp != '\0') && *ret >= 0 && *ret <= 0xFFFF;
 }
 
 /******************************************************************************/
