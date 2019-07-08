@@ -1,11 +1,23 @@
 #include "config/config.h"
+#include "services_init.h"
+
+#include "jobs/send_not.h"
+#include "jobs_runner.h"
+#include "publishers.h"
+#include "subscribers.h"
+
 #include "server.h"
 
 #include "log.h"
 
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
-#include <stdbool.h>
+
+/******************************************************************************/
+
+static inline void
+export_services();
 
 /******************************************************************************/
 
@@ -15,6 +27,13 @@ main(int argc, char* argv[])
 	/* Get command line arguments */
 	app_config_t config;
 	config_parse_argv(&config, argc, argv, true);
+
+	/* Export and initialize services */
+	export_services();
+	if (eznot_init_services(&config) != 0) {
+		log_fatal("Could not initialize app services!");
+		exit(EXIT_FAILURE);
+	}
 
 	/* Create an initialize a server struct */
 	eznot_server_t server;
@@ -43,6 +62,35 @@ main(int argc, char* argv[])
 	free_eznot_server(&server);
 
 	return EXIT_SUCCESS;
+}
+
+/******************************************************************************/
+
+static inline void
+export_services()
+{
+	/* Publishers */
+	eznot_add_service("Publishers Hashtable",
+					  &eznot_init_publishers_hashtable,
+					  &eznot_destroy_publishers_hashtable,
+					  true);
+	
+	/* Subscribers */
+	eznot_add_service("Subscribers Hashtable",
+					  &eznot_init_subscribers_hashtable,
+					  &eznot_destroy_subscribers_hashtable,
+					  true);
+	/* Job runner */
+	eznot_add_service("Jobs Runner",
+					  &eznot_init_jobs_runner,
+					  &eznot_destroy_jobs_runner,
+					  true);
+	/* Sent notifications job */
+	eznot_add_service("Send Notifications Job",
+					  &eznot_init_send_not_job,
+					  &eznot_destroy_send_not_job,
+					  true);
+
 }
 
 /******************************************************************************/

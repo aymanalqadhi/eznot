@@ -28,39 +28,7 @@ init_eznot_server(eznot_server_t* server, app_config_t* config)
 	server->loop = uv_default_loop();
 	server->handle.data = server;
 
-	int rc;
-	if (config->trusted_publishers_file == NULL) {
-		log_error("You need to provied a trusted publishers file!");
-		return -1;
-	} else {
-		log_debug("Reading trusted publishers...");
-		rc = eznot_init_publishers_hashtable(config);
-		if (rc != 0) {
-			log_error("Could not load publishers!");
-			return -1;
-		}
-	}
-
-	log_debug("Initializig thread pool with %d threads...",
-			  config->threads_count);
-	if (eznot_init_jobs_runner(config) != 0) {
-		log_error("Could initialize thread pool!");
-		return -1;
-	}
-
-	log_debug("Initializing app jobs...");
-	if (eznot_init_send_not_job(config) != 0) {
-		log_error("Could initialize app jobs!");
-		return -1;
-	}
-
-	log_debug("Initializing app containers...");
-	if (eznot_init_subscribers_hashtable(config) != 0) {
-		log_error("Could initialize app containers!");
-		return -1;
-	}
-
-	rc = uv_udp_init(server->loop, &server->handle);
+	int rc = uv_udp_init(server->loop, &server->handle);
 	UV_CHECK(rc, "uv_udp_init");
 
 	return 0;
