@@ -1,6 +1,7 @@
 #ifndef EZNOT_SUBSCRIBERS_H
 #define EZNOT_SUBSCRIBERS_H
 
+#include "config/config.h"
 #include "request_message.h"
 
 #include "uthash.h"
@@ -18,6 +19,9 @@ typedef struct subscriber
 
 	UT_hash_handle hh;
 } subscriber_t;
+
+int
+eznot_init_subscribers_hashtable(const app_config_t* conf);
 
 int
 eznot_add_subscriber(struct sockaddr_storage*, const char*, size_t);
