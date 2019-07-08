@@ -37,14 +37,14 @@ eznot_add_service(const char* name,
 	assert(init != NULL);
 	assert(destroy != NULL);
 
-	service_container_t* svc = malloc(sizeof(*svc));
+	service_container_t* svc = xmalloc(sizeof(*svc));
 
 	svc->service.name = name;
 	svc->service.init_func = init;
 	svc->service.destroy_func = destroy;
 	svc->service.is_required = required;
 
-	STAILQ_INSERT_TAIL(head, svc, entries);
+	STAILQ_INSERT_TAIL(&head, svc, entries);
 
 	return &svc->service;
 }
@@ -56,25 +56,44 @@ eznot_init_services(const app_config_t* conf)
 {
 	log_trace("eznot_init_services()");
 
-	service_container_t *svc, tmp;
+	service_container_t *svc;
 	int rc;
 
-	STAILQ_FOREACH(svc, head, tmp)
+	STAILQ_FOREACH(svc, &head, entries)
 	{
-		log_debug("Initializing service %s.", svc->service.name);
+		log_debug("Initializing service `%s'.", svc->service.name);
 
 		rc = svc->service.init_func(conf);
 		if (rc != 0 && svc->service.is_required) {
-			log_error("Could not initialize required service %s.",
+			log_error("Could not initialize required service `%s'.",
 					  svc->service.name);
 			return -1;
-		} else {
-			log_warn("Could not initialize service %s.",
+		} else if (rc != 0) {
+			log_warn("Could not initialize service `%s'.",
 					  svc->service.name);
 		}
 	}
 
 	return 0;
+}
+
+/******************************************************************************/
+
+void
+eznot_destroy_services()
+{
+	log_trace("eznot_destroy_services()");
+
+	service_container_t *svc;
+	while (!STAILQ_EMPTY(&head)) {
+		svc = STAILQ_FIRST(&head);
+
+		log_debug("Destroying service `%s'.", svc->service.name);
+		svc->service.destroy_func();
+
+		STAILQ_REMOVE_HEAD(&head, entries);
+		free(svc);
+	}
 }
 
 /******************************************************************************/
