@@ -26,4 +26,7 @@ eznot_add_service(const char* name,
 int
 eznot_init_services(const app_config_t* conf);
 
+void
+eznot_destroy_services();
+
 #endif /* end of include guard: EZNOT_SERVICES_INIT_H */
