@@ -2,6 +2,7 @@
 #include "address.h"
 #include "callbacks.h"
 #include "publishers.h"
+#include "subscribers.h"
 
 #include "jobs_runner.h"
 #include "jobs/send_not.h"
@@ -53,8 +54,14 @@ init_eznot_server(eznot_server_t *server, app_config_t *config)
 	}
 
 	log_debug("Initializing app jobs...");
-	if (eznot_init_send_not_job() != 0) {
+	if (eznot_init_send_not_job(config) != 0) {
 		log_error("Could initialize app jobs!");
+		return -1;
+	}
+
+	log_debug("Initializing app containers...");
+	if (eznot_init_subscribers_hashtable(config) != 0) {
+		log_error("Could initialize app containers!");
 		return -1;
 	}
 
