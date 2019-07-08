@@ -13,6 +13,12 @@
 #include <assert.h>
 #include <stdlib.h>
 
+#define UV_CHECK(r, msg) \
+  if (r) { \
+    log_error("%s: %s", msg, uv_strerror(r)); \
+    return -1; \
+  }
+
 /******************************************************************************/
 
 int
