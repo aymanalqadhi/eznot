@@ -30,7 +30,7 @@ parse_long(const char* str, long* ret);
 /******************************************************************************/
 
 int
-config_parse_argv(app_config_t* config,
+eznot_config_parse_argv(app_config_t* config,
 				  int argc,
 				  char** argv,
 				  bool handle_errors)

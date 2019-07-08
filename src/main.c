@@ -26,7 +26,7 @@ main(int argc, char* argv[])
 {
 	/* Get command line arguments */
 	app_config_t config;
-	config_parse_argv(&config, argc, argv, true);
+	eznot_config_parse_argv(&config, argc, argv, true);
 
 	/* Export and initialize services */
 	export_services();
