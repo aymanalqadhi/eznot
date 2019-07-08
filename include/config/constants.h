@@ -3,6 +3,7 @@
 
 /* Default config values */
 #define CONFIG_DEFAULT_PORT 		3434
+#define CONFIG_DEFAULT_SEND_PORT 	3435
 #define CONFIG_DEFAULT_IPV6_ENABLED 0
 
 /**** App name and version ******/
@@ -15,17 +16,18 @@
 
 /* String used by getopt function to interpret 
  * command line arguments */
-#define CONFIG_ARGS_LIST "p:t:6hV"
+#define CONFIG_ARGS_LIST "s:p:t:6hV"
 
 /* Comannd line usage string */
 #define CONFIG_COMMAND_LINE_USAGE \
-  "[ -p port ] [ -t trusted ][ -6] [ -h ] [ -V ]"
+  "[ -p port ] [ -s send-port ] [ -t trusted ][ -6] [ -h ] [ -V ]"
 
 /* Command line arguments help list.
  * Starts with the usage, and followed by each argument description.
  */
 #define CONFIG_COMMAND_LINE_HELP \
   "  -p, --port      The port to listen on.\n"\
+  "  -s, --send-port The port to send notifications on.\n"\
   "  -t, --trusted   A file containing trusted publishers.\n"\
   "  -6, --ipv6      Enforce IPv6 usage.\n"\
   "  -h, --help      Show this message and exit.\n"\

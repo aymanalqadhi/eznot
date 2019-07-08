@@ -40,17 +40,19 @@ config_parse_argv(app_config_t* config,
 
 	/* Application options definitions */
 	static struct option options[] = {
-		{"port",    required_argument, NULL, 'p'},
-		{"trusted", required_argument, NULL, 't'},
-		{"ipv6",    no_argument, NULL,       '6'},
-		{"help",    no_argument, NULL,       'h'},
-		{"version", no_argument, NULL,       'V'}
+		{"port",      required_argument, NULL, 'p'},
+		{"send-port", required_argument, NULL, 's'},
+		{"trusted",   required_argument, NULL, 't'},
+		{"ipv6",      no_argument, NULL,       '6'},
+		{"help",      no_argument, NULL,       'h'},
+		{"version",   no_argument, NULL,       'V'}
 	};
 
 	/* Set default values */
-	config->executable_name = argv[0];
-	config->ipv6 = CONFIG_DEFAULT_IPV6_ENABLED;
-	config->listen_port = CONFIG_DEFAULT_PORT;
+	config->executable_name         = argv[0];
+	config->ipv6                    = CONFIG_DEFAULT_IPV6_ENABLED;
+	config->listen_port             = CONFIG_DEFAULT_PORT;
+	config->send_port               = CONFIG_DEFAULT_SEND_PORT;
 	config->trusted_publishers_file = NULL;
 
 	while ((arg = getopt_long_only(
@@ -73,7 +75,23 @@ config_parse_argv(app_config_t* config,
 			config->listen_port = (uint16_t)parsed_value;
 			break;
 
-		/* Port option */
+		/* Send port option */
+		case 's':
+			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
+				parsed_value > 0xFFFF) {
+				error_message = "Invalid port value";
+				if (handle_errors) {
+					fprintf(stderr, "ERROR: %s!\n", error_message);
+					exit(EXIT_FAILURE);
+				} else {
+					return CONFIG_INVALID_VALUE;
+				}
+			}
+
+			config->send_port = (uint16_t)parsed_value;
+			break;
+
+		/* Trusted publishers file option */
 		case 't':
 			if (access(optarg, F_OK) == -1) {
 				if (handle_errors) {
