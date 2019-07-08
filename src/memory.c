@@ -18,7 +18,6 @@ xmalloc(size_t size)
 		exit(EXIT_FAILURE);
 	}
 
-	log_debug("Allocated %d bytes in %p", size, ret);
 	return ret;
 }
 
