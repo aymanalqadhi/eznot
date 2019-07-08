@@ -21,9 +21,6 @@ typedef struct subscriber
 } subscriber_t;
 
 int
-eznot_init_subscribers_hashtable(const app_config_t* conf);
-
-int
 eznot_add_subscriber(struct sockaddr_storage*, const char*, size_t);
 
 subscriber_t*
@@ -37,5 +34,11 @@ eznot_get_subscribers();
 
 unsigned int
 eznot_subscribers_count();
+
+int
+eznot_init_subscribers_hashtable(const app_config_t* conf);
+
+void
+eznot_destroy_subscribers_hashtable();
 
 #endif /* end of include guard: EZNOT_SUBSCRIBERS_H */

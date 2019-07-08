@@ -147,3 +147,19 @@ eznot_init_subscribers_hashtable(const app_config_t* conf)
 }
 
 /******************************************************************************/
+
+void
+eznot_destroy_subscribers_hashtable()
+{
+	log_trace("eznot_destroy_subscribers_hashtable()");
+
+	subscriber_t *subs, *tmp;
+	HASH_ITER(hh, subscribers, subs, tmp) {
+		HASH_DELETE(hh, subscribers, subs);
+		free(subs);
+	}
+
+	subscribers = NULL;
+}
+
+/******************************************************************************/
