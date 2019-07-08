@@ -21,36 +21,14 @@ typedef struct app_config
 	const char* executable_name; /* The executing file name (argv[0]) */
 
 	uint16_t listen_port;   /* The port the server listens on */
-	uint16_t send_port;     /* The port the server sends notifications on */
+	uint16_t send_port;		/* The port the server sends notifications on */
 	uint16_t threads_count; /* The number of the threads in thr threadpool */
 
-	bool use_ipv6;          /* If set, IPv6 is used, default is IPv4 */
-	FILE *trusted_publishers_file;
+	bool use_ipv6; /* If set, IPv6 is used, default is IPv4 */
+	FILE* trusted_publishers_file;
 } app_config_t;
 
-/**
- * Parses command line arguments and sets the results in `config' parameter
- *
- * @param config    The structure to store the results in
- * @param argc      Command line arguments count
- * @param argv      Command line arguments values vector
- * @param handle_errors If true, the function will handle errors on its own
- *
- * @return 0 on success, negative value on failure
- */
-int
-config_parse_argv(app_config_t* config,
-				  int argc,
-				  char** argv,
-				  bool handle_errors);
-
-/**
- * Gets the last error message
- *
- * @return NULL if there was no error message, or
- *         a pointer to the error message string
- */
-const char*
-config_last_error();
+void
+eznot_config_parse_argv(app_config_t* config, int argc, char** argv);
 
 #endif /* EZSRV_CONFIG_CONFIG_H */

@@ -18,22 +18,13 @@ static const char*error_message;
 
 /******************************************************************************/
 
-/**
- * A Helper function to parse string to integer values
- *
- * @param ret A pointer to a variable into which to store the result
- * @return 0 on success, or -1 on failure
- */
 static int
 parse_long(const char* str, long* ret);
 
 /******************************************************************************/
 
-int
-eznot_config_parse_argv(app_config_t* config,
-				  int argc,
-				  char** argv,
-				  bool handle_errors)
+void
+eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 {
 	char arg;
 	long parsed_value;
@@ -65,13 +56,8 @@ eznot_config_parse_argv(app_config_t* config,
 		case 'p':
 			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
 				parsed_value > 0xFFFF) {
-				error_message = "Invalid port value";
-				if (handle_errors) {
-					fprintf(stderr, "ERROR: %s!\n", error_message);
-					exit(EXIT_FAILURE);
-				} else {
-					return CONFIG_INVALID_VALUE;
-				}
+				fprintf(stderr, "ERROR: %s!\n", error_message);
+				exit(EXIT_FAILURE);
 			}
 
 			config->listen_port = (uint16_t)parsed_value;
@@ -81,13 +67,8 @@ eznot_config_parse_argv(app_config_t* config,
 		case 's':
 			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
 				parsed_value > 0xFFFF) {
-				error_message = "Invalid port value";
-				if (handle_errors) {
-					fprintf(stderr, "ERROR: %s!\n", error_message);
-					exit(EXIT_FAILURE);
-				} else {
-					return CONFIG_INVALID_VALUE;
-				}
+				fprintf(stderr, "ERROR: %s!\n", error_message);
+				exit(EXIT_FAILURE);
 			}
 
 			config->threads_count = (uint16_t)parsed_value;
@@ -97,61 +78,41 @@ eznot_config_parse_argv(app_config_t* config,
 		case 'r':
 			if (parse_long(optarg, &parsed_value) == -1 || parsed_value < 0 ||
 				parsed_value > 0xFFFF) {
-				error_message = "Invalid threads count value";
-				if (handle_errors) {
 					fprintf(stderr, "ERROR: %s!\n", error_message);
 					exit(EXIT_FAILURE);
-				} else {
-					return CONFIG_INVALID_VALUE;
-				}
 			}
 
 			config->send_port = (uint16_t)parsed_value;
 			break;
+
 		/* Trusted publishers file option */
 		case 't':
 			if (access(optarg, F_OK) == -1) {
-				if (handle_errors) {
 					fprintf(stderr, "ERROR: Cannot access file %s\n", optarg);
 					exit(EXIT_FAILURE);
-				} else {
-					return CONFIG_INVALID_VALUE;
-				}
 			}
 
 			config->trusted_publishers_file = fopen(optarg, "r");
 			if (config->trusted_publishers_file == NULL) {
-				if (handle_errors) {
 					fprintf(stderr, "ERROR: Could not open file %s\n", optarg);
 					exit(EXIT_FAILURE);
-				} else {
-					return CONFIG_UNKNOWN_ERROR;
-				}
 			}
 
 			break;
 
 		/* Help option */
 		case 'h':
-			if (handle_errors) {
-				printf("Usage: %s %s\n\n%s\n\nOptions:\n%s\n",
-					   argv[0],
-					   CONFIG_COMMAND_LINE_USAGE,
-					   CONFIG_APP_DESCRIPTION,
-					   CONFIG_COMMAND_LINE_HELP);
-				exit(EXIT_SUCCESS);
-			} else {
-				return CONFIG_HELP_MESSAGE;
-			}
+			printf("Usage: %s %s\n\n%s\n\nOptions:\n%s\n",
+				   argv[0],
+				   CONFIG_COMMAND_LINE_USAGE,
+				   CONFIG_APP_DESCRIPTION,
+				   CONFIG_COMMAND_LINE_HELP);
+			exit(EXIT_SUCCESS);
 
 		/* Version option */
 		case 'V':
-			if (handle_errors) {
-				printf("%s version %s\n", CONFIG_APP_NAME, CONFIG_APP_VERSION);
-				exit(EXIT_SUCCESS);
-			} else {
-				return CONFIG_VERSION_MESSAGE;
-			}
+			printf("%s version %s\n", CONFIG_APP_NAME, CONFIG_APP_VERSION);
+			exit(EXIT_SUCCESS);
 
 		/* IPv6 option */
 		case '6':
@@ -160,30 +121,14 @@ eznot_config_parse_argv(app_config_t* config,
 
 			/* An error occured */
 		default:
-			error_message = "Invalid Options";
-			if (handle_errors) {
-				fprintf(stderr,
-						"ERROR: %s!\nUsage: %s %s\n",
-						error_message,
-						argv[0],
-						CONFIG_COMMAND_LINE_USAGE);
-				exit(EXIT_FAILURE);
-			} else {
-				return CONFIG_INVALID_AEGUMENT;
-			}
+			fprintf(stderr,
+					"ERROR: %s!\nUsage: %s %s\n",
+					error_message,
+					argv[0],
+					CONFIG_COMMAND_LINE_USAGE);
+			exit(EXIT_FAILURE);
 		}
 	}
-
-	error_message = NULL;
-	return 0;
-}
-
-/******************************************************************************/
-
-const char*
-config_last_error()
-{
-	return error_message;
 }
 
 /******************************************************************************/
