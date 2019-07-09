@@ -13,11 +13,11 @@
 #include <assert.h>
 #include <stdlib.h>
 
-#define UV_CHECK(r, msg) \
-  if (r) { \
-    log_error("%s: %s", msg, uv_strerror(r)); \
-    return -1; \
-  }
+#define UV_CHECK(r, msg)                                                       \
+	if (r) {                                                                   \
+		log_error("%s: %s", msg, uv_strerror(r));                              \
+		return -1;                                                             \
+	}
 
 /******************************************************************************/
 
@@ -66,11 +66,15 @@ start_eznot_server(const eznot_server_t* server)
 		UV_CHECK(rc, "uv_udp_bind");
 	}
 
-	rc = uv_udp_recv_start(
-		(uv_udp_t*)&server->handle, &eznot_on_alloc, &eznot_on_recv);
-	UV_CHECK(rc, "uv_udp_recv_start");
-	rc = uv_run(server->loop, UV_RUN_DEFAULT);
-	UV_CHECK(rc, "uv_run");
+	UV_CHECK(uv_udp_recv_start(
+				 (uv_udp_t*)&server->handle, &eznot_on_alloc, &eznot_on_recv),
+			 "uv_udp_recv_start");
+	
+	log_info("Listening on: %s:%d",
+			 server->config->use_ipv6 ? EZNOT_IPV6_ANY : EZNOT_IPV4_ANY,
+			 server->config->listen_port);
+
+	UV_CHECK(uv_run(server->loop, UV_RUN_DEFAULT), "uv_run");
 
 	return 0;
 }
