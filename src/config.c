@@ -31,16 +31,20 @@ eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 		{"threads",   required_argument, NULL, 'r'},
 		{"trusted",   required_argument, NULL, 't'},
 		{"ipv6",      no_argument, NULL,       '6'},
+		{"verbose",   no_argument, NULL,       'v'},
 		{"help",      no_argument, NULL,       'h'},
 		{"version",   no_argument, NULL,       'V'}
 	};
 
 	/* Set default values */
 	config->executable_name         = argv[0];
+
 	config->listen_port             = CONFIG_DEFAULT_PORT;
 	config->send_port               = CONFIG_DEFAULT_SEND_PORT;
 	config->threads_count           = CONFIG_DEFAULT_THREAD_COUNT;
 	config->use_ipv6                = CONFIG_DEFAULT_IPV6_ENABLED;
+	config->log_level               = CONFIG_DEFAULT_VERBOSITY;
+
 	config->trusted_publishers_file = NULL;
 
 	while ((arg = getopt_long_only(
@@ -92,6 +96,21 @@ eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 
 			break;
 
+		/* IPv6 option */
+		case '6':
+			config->use_ipv6 = true;
+			break;
+
+		/* Send port option */
+		case 'v':
+			if (config->log_level - 1 >= 0) {
+				--config->log_level;
+			} else {
+				config->log_level = 0;
+			}
+
+			break;
+
 		/* Help option */
 		case 'h':
 			printf("Usage: %s %s\n\n%s\n\nOptions:\n%s\n",
@@ -105,11 +124,6 @@ eznot_config_parse_argv(app_config_t* config, int argc, char** argv)
 		case 'V':
 			printf("%s version %s\n", CONFIG_APP_NAME, CONFIG_APP_VERSION);
 			exit(EXIT_SUCCESS);
-
-		/* IPv6 option */
-		case '6':
-			config->use_ipv6 = true;
-			break;
 
 			/* An error occured */
 		default:

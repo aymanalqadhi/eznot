@@ -27,6 +27,9 @@ main(int argc, char* argv[])
 	/* Get command line arguments */
 	app_config_t config;
 	eznot_config_parse_argv(&config, argc, argv);
+	
+	/* Config the logger */
+	log_set_level(config.log_level);
 
 	/* Export and initialize services */
 	export_services();
